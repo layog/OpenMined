@@ -460,6 +460,16 @@ namespace OpenMined.Syft.Tensor
                     View(new_dims, inline: true);
                     return Id.ToString();
                 }
+
+                case "unfold":
+                {
+                    int dim = int.Parse (msgObj.tensorIndexParams [0]);
+                    int size = int.Parse (msgObj.tensorIndexParams [1]);
+                    int step = int.Parse (msgObj.tensorIndexParams [2]);
+                    
+                    var result = Unfold (dim, size, step);
+                    return result.Id.ToString ();
+                }
                 
                 case "to_numpy_by_proto":
                 {
