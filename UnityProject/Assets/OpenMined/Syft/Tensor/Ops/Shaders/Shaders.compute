@@ -999,3 +999,28 @@ RWStructuredBuffer<float> ZeroData_;
 void Zero_ (uint3 id: SV_DispatchThreadID) {
        ZeroData_[id.x] = 0;
 }
+
+#pragma kernel UnfoldInt
+
+StructuredBuffer<int> UnfoldIntData;
+StructuredBuffer<int> UnfoldIntSizeBeforeDim;
+StructuredBuffer<int> UnfoldIntSizeAfterDim;
+StructuredBuffer<int> UnfoldIntDimSize;
+StructuredBuffer<int> UnfoldIntSize;
+StructuredBuffer<int> UnfoldIntStep;
+RWStructuredBuffer<int> UnfoldIntResult;
+
+[numthreads(4, 1, 1)]
+void UnfoldInt(uint3 id: SV_DispatchThreadID)
+{
+	int currentStep = (id.x/(UnfoldIntSizeBeforeDim[0] * UnfoldIntSize[0] * UnfoldIntSizeAfterDim[0]));
+	int updatedIndex = (id.x % (UnfoldIntSizeBeforeDim[0] * UnfoldIntSize[0] * UnfoldIntSizeAfterDim[0]));
+	int stepOffset = currentStep * UnfoldIntSizeAfterDim[0] * UnfoldIntStep[0];
+
+	int sizeIndex = updatedIndex/(UnfoldIntSize[0] * UnfoldIntSizeAfterDim[0]);
+	int sizeOffset = sizeIndex * (UnfoldIntDimSize[0] - UnfoldIntSize[0]) * UnfoldIntSizeAfterDim[0];
+
+	int indexToQuery = updatedIndex + stepOffset + sizeOffset;
+
+	UnfoldIntResult[id.x] = UnfoldIntData[indexToQuery];
+}

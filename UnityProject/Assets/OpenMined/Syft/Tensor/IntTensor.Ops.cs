@@ -521,7 +521,11 @@ namespace OpenMined.Syft.Tensor
             }
             
             if (dataOnGpu) {
-                throw new NotImplementedException ();
+                if (inline){
+                    throw new NotImplementedException ();
+                } else {
+                    return UnfoldGPU(new_shape, size, dimSize, sizeBeforeDim, sizeAfterDim, step);
+                }
             } else {
                 if (inline) {
                     throw new NotImplementedException ();
