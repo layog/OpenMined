@@ -882,6 +882,45 @@ namespace OpenMined.Tests.Tensor.IntTensor
             }
         }
 
+        [Test]
+        public void Unfold_()
+        {
+            int[] input_data = {-1, 2, 3, 5, 0, 4, 6, 7, 10, 3, 2, -5};
+            int[] input_shape = {3, 4};
+
+            // Test1
+            var input_tensor1 = ctrl.intTensorFactory.Create(_data: input_data, _shape: input_shape);
+            int dim = 0;
+            int step = 1;
+            int size = 2;
+            int[] expected_data = {-1, 2, 3, 5, 0, 4, 6, 7, 0, 4, 6, 7, 10, 3, 2, -5};
+            int[] expected_shape = {2, 2, 4};
+            var expected_output_tensor = ctrl.intTensorFactory.Create(_data: expected_data, _shape: expected_shape);
+
+            input_tensor1.Unfold(dim: dim, step: step, size: size, inline: true);
+            
+            for (int i = 0; i<expected_output_tensor.Size; i++)
+            {
+                Assert.AreEqual(expected_output_tensor[i], input_tensor1[i]);
+            }
+
+            // Test2
+            var input_tensor2 = ctrl.intTensorFactory.Create(_data: input_data, _shape: input_shape);
+            dim = 1;
+            step = 1;
+            size = 3;
+            int[] expected_data2 = {-1, 2, 3, 0, 4, 6, 10, 3, 2, 2, 3, 5, 4, 6, 7, 3, 2, -5};
+            int[] expected_shape2 = {2, 3, 3};
+            var expected_output_tensor2 = ctrl.intTensorFactory.Create(_data: expected_data2, _shape: expected_shape2);
+
+            input_tensor2.Unfold(dim: dim, step: step, size: size, inline: true);
+            
+            for (int i = 0; i<expected_output_tensor2.Size; i++)
+            {
+                Assert.AreEqual(expected_output_tensor2[i], input_tensor2[i]);
+            }
+        }
+
         /* closes class and namespace */
     }
 }
