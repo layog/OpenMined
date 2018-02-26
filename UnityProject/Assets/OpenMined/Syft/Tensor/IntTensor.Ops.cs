@@ -555,7 +555,7 @@ namespace OpenMined.Syft.Tensor
             
             // Declaring required variables
             int[] new_shape = new int[this.shape.Count() + 1];
-            long newTensorSize = 1;
+            int newTensorSize = 1;
             int dimSize = this.shape[dim];
             int sizeBeforeDim = 1;
             int sizeAfterDim = 1;
@@ -587,23 +587,28 @@ namespace OpenMined.Syft.Tensor
                     return UnfoldGPU(new_shape, size, dimSize, sizeBeforeDim, sizeAfterDim, step);
                 }
             } else {
+                int[] dataContainer = new int[newTensorSize];
+                Parallel.For(0, newTensorSize, index => {
+                    // Calculating the offset due to step
+                    int currentStep = (int) (index/(sizeBeforeDim * size * sizeAfterDim));
+                    int updatedIndex = (int) (index % (sizeBeforeDim * size * sizeAfterDim));
+                    int stepOffset = currentStep * sizeAfterDim * step;
+
+                    // Calculating the offset due to size difference of dim
+                    int sizeIndex = (int) (updatedIndex/(size * sizeAfterDim));
+                    int sizeOffset = sizeIndex * (dimSize - size) * sizeAfterDim;
+
+                    int indexToQuery = updatedIndex + stepOffset + sizeOffset;
+                    dataContainer[index] = data[indexToQuery];
+                });
                 if (inline) {
-                    throw new NotImplementedException ();
+                    this.data = dataContainer;
+                    this.shape = new_shape;
+                    this.size = newTensorSize;
+                    return this;
                 } else {
                     IntTensor result = factory.Create (new_shape);
-                    Parallel.For(0, newTensorSize, index => {
-                        // Calculating the offset due to step
-                        int currentStep = (int) (index/(sizeBeforeDim * size * sizeAfterDim));
-                        int updatedIndex = (int) (index % (sizeBeforeDim * size * sizeAfterDim));
-                        int stepOffset = currentStep * sizeAfterDim * step;
-
-                        // Calculating the offset due to size difference of dim
-                        int sizeIndex = (int) (updatedIndex/(size * sizeAfterDim));
-                        int sizeOffset = sizeIndex * (dimSize - size) * sizeAfterDim;
-
-                        int indexToQuery = updatedIndex + stepOffset + sizeOffset;
-                        result.data[index] = data[indexToQuery];
-                    });
+                    result.data = dataContainer;
                     return result;
                 }
             }
